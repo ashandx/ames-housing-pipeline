@@ -8,5 +8,8 @@ __pycache__/
 # OS
 .DS_Store
 
+# Generated outputs
+data/submission_stub.csv
+
 # Claude
 Claude.md

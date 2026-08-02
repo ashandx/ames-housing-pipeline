@@ -6,12 +6,14 @@ A `ColumnTransformer` + `Pipeline` on the Ames Housing dataset, comparing Ridge 
 
 A second pass adds 8 engineered features (3 ratios, 2 interactions, 2 date-decomposition, 1 binned) plus `log1p` on `SalePrice` and the most-skewed numeric inputs (`GrLivArea`, `LotArea`, `TotalBsmtSF`). This dropped 5-fold CV RMSE from 34,090 to 32,181 for LinearRegression (-5.6%) and from 33,909 to 32,160 for Ridge (-5.2%).
 
+A third pass tunes `Ridge`'s `alpha` via `GridSearchCV` (32,149, a negligible improvement over the default) and introduces `RandomForestRegressor` tuned via `RandomizedSearchCV` (31,404, -2.4% vs the Ridge baseline, with roughly a third of Ridge's fold-to-fold variance). Random Forest is the final model.
+
 ## Setup
 
 ```bash
 conda create -n ames-housing-pipeline python=3.11
 conda activate ames-housing-pipeline
-pip install pandas numpy scikit-learn jupyter
+pip install pandas numpy scikit-learn scipy matplotlib jupyter
 ```
 
 ## Run
@@ -31,5 +33,6 @@ Kaggle's actual `test.csv` (the unlabeled competition holdout set) isn't include
 ## Known limitations
 
 - Feature selection (10 numeric + 6 categorical, plus 8 engineered on top) was chosen for a first pass, not tuned or exhaustively justified.
-- `Ridge` uses the default `alpha=1.0` — no hyperparameter search yet.
+- Random Forest's tuned pipeline reuses the linear-model preprocessor (`StandardScaler`, `log1p` skew transform) unchanged, even though trees don't need scaling — a deliberate simplification to keep every model comparable on the same feature matrix, not an oversight.
 - No real Kaggle `test.csv` is available locally, so the "submission" step uses the existing held-out split as a format stand-in — it can't be scored on the actual leaderboard.
+- The learning curve (Section 13) shows validation RMSE still improving at the largest available training size — the dataset is capped at 1,460 rows, so "more data would help" isn't actionable within this notebook.
